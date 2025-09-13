@@ -13,7 +13,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/orders', {
+      return await apiRequest('/order', {
         method: 'POST',
         body: JSON.stringify(orderData),
       });
@@ -29,7 +29,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/orders');
+      return await apiRequest('/order');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch orders');
       throw err;
@@ -42,7 +42,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest(`/orders/${id}`);
+      return await apiRequest(`/order/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch order');
       throw err;
@@ -55,7 +55,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest(`/orders/user/${userId}`);
+      return await apiRequest(`/order/user/${userId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch user orders');
       throw err;
@@ -68,7 +68,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest(`/orders/status/${status}`);
+      return await apiRequest(`/order/status/${status}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch orders by status');
       throw err;
@@ -81,7 +81,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest(`/orders/${orderId}/status`, {
+      return await apiRequest(`/order/${orderId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status }),
       });
@@ -97,7 +97,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest(`/orders/${orderId}/cancel`, {
+      return await apiRequest(`/order/${orderId}/cancel`, {
         method: 'PATCH',
       });
     } catch (err) {
@@ -113,7 +113,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/orders/filter', {
+      return await apiRequest('/order/filter', {
         method: 'POST',
         body: JSON.stringify(filters),
       });
@@ -129,7 +129,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/orders/sales');
+      return await apiRequest('/order/sales');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch sales by products');
       throw err;
@@ -142,7 +142,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/orders/total-sales');
+      return await apiRequest('/order/total-sales');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch total sales');
       throw err;
@@ -155,7 +155,7 @@ export const useOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/orders/monthly-sales');
+      return await apiRequest('/order/monthly-sales');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch monthly sales report');
       throw err;

@@ -6,6 +6,7 @@ import {HomePage}  from './pages/HomePage';
 import {ShopPage} from './pages/ShopPage';
 import { ProductPage } from './pages/ProductPage';
 import { CartPage } from './pages/CartPage';
+import { UserProfile } from './pages/UserProfile';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +23,10 @@ function App() {
             <Route 
               path="/" 
               element={<HomePage searchQuery={searchQuery} />} 
+            />
+            <Route 
+              path="/profile" 
+              element={<UserProfile />} 
             />
             <Route 
               path="/shop" 

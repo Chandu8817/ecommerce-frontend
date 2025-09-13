@@ -1,6 +1,8 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
 export interface ApiResponse<T> {
+  token: any;
+  items(items: any): unknown;
   data: T;
   message?: string;
   pagination?: {

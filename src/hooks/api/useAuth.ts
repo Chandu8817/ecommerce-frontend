@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { apiRequest } from './apiConfig';
+import { ShippingAddress, User } from '../../types';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -9,7 +10,7 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiRequest('/auth/register', {
+      const data = await apiRequest<User>('/auth/register', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -33,6 +34,7 @@ export const useAuth = () => {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
+
       if (data.token) {
         localStorage.setItem('token', data.token);
       }
@@ -49,7 +51,7 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-     localStorage.removeItem('token');
+      localStorage.removeItem('token');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Logout failed');
       throw err;
@@ -62,7 +64,38 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/auth/me');
+      const data = await apiRequest<User>('/auth/me');
+      return data as unknown as User;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addShippingAddress = async (address: ShippingAddress) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest('/auth/shipping-address', {
+        method: 'POST',
+        body: JSON.stringify(address),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add shipping address');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getShippingAddress = async () =>  {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiRequest<ShippingAddress[]>('/auth/shipping-address');
+      return data as unknown as ShippingAddress[];
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch user');
       throw err;
@@ -81,6 +114,8 @@ export const useAuth = () => {
     login,
     logout,
     getCurrentUser,
+    addShippingAddress,
+    getShippingAddress,
     isAuthenticated,
     loading,
     error,

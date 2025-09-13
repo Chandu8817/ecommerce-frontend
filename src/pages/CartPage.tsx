@@ -1,10 +1,141 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/api/useCart';
+import { Items, ShippingAddress,User } from '../types';
+import axios from "axios";
+import { useAuth } from '../hooks/api/useAuth';
+import { usePayment } from '../hooks/api/usePayment';
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export const CartPage: React.FC = () => {
-  const { items, total, itemCount, updateQuantity, removeItem, clearCart } = useCart();
+  const { getCart, updateCartItem, removeFromCart, clearCart } = useCart();
+  const { getCurrentUser, getShippingAddress } = useAuth();
+  const [items, setItems] = React.useState<Items[]>([]);
+  const [userId, setUserId] = React.useState<string>("");
+  const { createPaymentOrder, verifyPayment } = usePayment();
+  const [shippingAddress, setShippingAddress] = React.useState<ShippingAddress>({
+    name: "",
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    phone: "",
+    isDefault: false,
+  });
+
+
+  React.useEffect(() => {
+   getCurrentUser().then((user:User) => {
+    console.log(user._id );
+     setUserId(user._id);
+   });
+  }, []);
+
+  React.useEffect(() => {
+    getShippingAddress().then((addresses) => {
+      console.log(addresses);
+      const address = addresses?.filter((address:ShippingAddress) => address.isDefault);
+
+      setShippingAddress(address?.[0]);
+    });
+  }, []);
+
+  React.useEffect(() => {
+    getCart().then((cart) => {
+      setItems(cart.items);
+      
+    });
+  }, []);
+
+  const updateQuantity = (productId: string, quantity: number) => {
+    
+    updateCartItem(productId, quantity).then(() => {
+      getCart().then((cart) => {
+        
+        setItems(cart.items);
+      });
+    });
+  };
+
+  const removeItem = (productId: string) => {
+    removeFromCart(productId).then(() => {
+      getCart().then((cart) => {
+        setItems(cart.items);
+      });
+    });
+  };
+
+  const clearCartItems = () => {
+    clearCart().then(() => {
+      setItems([]);
+    });
+  };
+
+
+const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
+  // 1️⃣ Calculate total amount
+  const totalAmount = cart.reduce(
+    (sum:any, item:any) => sum + item.productId.price * item.quantity,
+    0
+  );
+
+  // 2️⃣ Prepare products for DB order
+  const products = cart.map((item:any) => ({
+    product: item.productId._id,
+    quantity: item.quantity,
+  }));
+
+  // 3️⃣ Create payment order from backend
+  const order = await createPaymentOrder(
+    totalAmount,
+  );
+
+
+  // 2️⃣ Open Razorpay Checkout
+  
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+    amount: order.totalAmount,
+    currency: "INR",
+    order_id: order?.id,
+    name: "My Store",
+    description: "Purchase",
+    handler: async (response:any) => {
+      debugger
+      // 5️⃣ Verify payment & create DB order
+      await verifyPayment(
+        order?.id as string,
+        response.razorpay_payment_id,
+        response.razorpay_signature,
+        {
+          user: userId,
+          products,
+          totalAmount,
+          shippingAddress,
+          paymentMethod: "razorpay",
+        },
+      );
+      alert("Payment successful!");
+    },
+    prefill: {
+      name: "Test User",
+      email: "test@example.com",
+      contact: "9876543210",
+    },
+    theme: {
+      color: "#3399cc",
+    },
+  };
+
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+};
+
 
   if (items.length === 0) {
     return (
@@ -30,20 +161,21 @@ export const CartPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-          <p className="text-gray-600 mt-2">{itemCount} items in your cart</p>
+          <p className="text-gray-600 mt-2">{items.length} items in your cart</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl p-6 shadow-sm border">
+            {items.map((item,index) => (
+              
+              <div key={index} className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-start space-x-4">
                   {/* Product Image */}
-                  <Link to={`/product/${item.id}`} className="flex-shrink-0">
+                  <Link to={`/product/${item.productId._id}`} className="flex-shrink-0">
                     <img
-                      src={item.image}
-                      alt={item.name}
+                      src={item.productId.images[0]}
+                      alt={item.productId.name}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                   </Link>
@@ -51,33 +183,33 @@ export const CartPage: React.FC = () => {
                   {/* Product Info */}
                   <div className="flex-1 min-w-0">
                     <Link
-                      to={`/product/${item.id}`}
+                      to={`/product/${item.productId._id}`}
                       className="text-lg font-semibold text-gray-900 hover:text-orange-600 transition-colors"
                     >
-                      {item.name}
+                      {item.productId.name}
                     </Link>
                     <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-sm text-gray-600">{item.category}</span>
-                      <span className="text-sm text-gray-600">{item.gender}</span>
+                      <span className="text-sm text-gray-600">{item.productId.category}</span>
+                      <span className="text-sm text-gray-600">{item.productId.gender}</span>
                     </div>
                     <div className="flex items-center justify-between mt-4">
                       <div className="flex items-center space-x-3">
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.productId._id, item.quantity - 1)}
                           className="p-1 rounded-md border border-gray-300 hover:bg-gray-50"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="text-lg font-semibold w-8 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.productId._id, item.quantity + 1)}
                           className="p-1 rounded-md border border-gray-300 hover:bg-gray-50"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.productId._id)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -87,8 +219,8 @@ export const CartPage: React.FC = () => {
 
                   {/* Price */}
                   <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900">₹{item.price * item.quantity}</div>
-                    <div className="text-sm text-gray-600">₹{item.price} each</div>
+                    <div className="text-lg font-bold text-gray-900">₹{item.productId.price * item.quantity}</div>
+                    <div className="text-sm text-gray-600">₹{item.productId.price} each</div>
                   </div>
                 </div>
               </div>
@@ -116,25 +248,25 @@ export const CartPage: React.FC = () => {
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal ({itemCount} items)</span>
-                <span className="text-gray-900">₹{total}</span>
+                <span className="text-gray-600">Subtotal ({items.length} items)</span>
+                <span className="text-gray-900">₹{items.reduce((total, item) => total + (item.productId.price * item.quantity), 0)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="text-green-600">Free</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Tax</span>
-                <span className="text-gray-900">₹{Math.round(total * 0.18)}</span>
+                <span className="text-gray-600">Address</span>
+                <span className="text-green-600">{`${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.zipCode}`}</span>
               </div>
               <hr />
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>₹{total + Math.round(total * 0.18)}</span>
+                <span>₹{items.reduce((total, item) => total + (item.productId.price * item.quantity), 0)}</span>
               </div>
             </div>
 
-            <button className="w-full bg-orange-500 text-white font-semibold py-4 rounded-xl hover:bg-orange-600 transition-colors">
+            <button onClick={() => handleCheckout(items,userId,shippingAddress)} className="w-full bg-orange-500 text-white font-semibold py-4 rounded-xl hover:bg-orange-600 transition-colors">
               Proceed to Checkout
             </button>
 

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Search, ShoppingCart, Heart, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+// import { useCart } from '../hooks/api/useCart';
+import { useCartContext } from '../context/CartContext';
 import AuthModal from './AuthModal';
 import useAuth from '../hooks/api/useAuth';
 import { User as UserType } from '../types';
+import { CartItem } from '../types';
+import { useCart } from '../hooks/api';
 
 interface HeaderProps {
   onSearchChange: (query: string) => void;
@@ -15,16 +18,27 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange, searchQuery }) =
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const {getCurrentUser,logout,isAuthenticated} = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { itemCount } = useCart();
+  const { getCart } = useCart();
+  const [cart, setCart] = useState<CartItem>({ items: [], userId: '', _id: '', createdAt: '', updatedAt: '' });
+  const { count, setCount } = useCartContext();
+  
   const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     if(isAuthenticated()){
       getCurrentUser().then((user) => {
-        setUser(user);
+        setUser(user as unknown as UserType);
       });
     }
   }, [isAuthModalOpen]);
+
+  useEffect(() => {
+    getCart().then((cart) => {
+      setCart(cart);
+      setCount(cart.items.length);
+ 
+    });
+  }, []);
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
@@ -68,9 +82,9 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange, searchQuery }) =
               </button>
               <Link to="/cart" className="relative p-2 text-gray-600 hover:text-orange-500 transition-colors">
                 <ShoppingCart className="w-6 h-6" />
-                {itemCount > 0 && (
+                {(count > 0) && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {itemCount}
+                    {count}
                   </span>
                 )}
               </Link>

@@ -1,34 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, Star, ShoppingCart, Truck, Shield, RotateCcw, Loader2 } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { Link, useParams } from 'react-router-dom';
+import { Loader2, Heart, Star, ShoppingCart, Truck, RotateCcw, Shield } from 'lucide-react';
+import { useCart } from '../hooks/api/useCart';
 import { apiGet } from '../hooks/api/apiConfig';
-import { Product as CartProduct } from '../types';
-
-interface Product extends Omit<CartProduct, 'id' | 'image' | 'features'> {
-  _id: string;
-  images: string[];
-  specifications: Record<string, string>;
-  details: string[];
-  stock: number;
-  tags: string[];
-  colors: string[];
-  sizes: string[];
-  reviews: number;
-}
+import type { Product } from '../types';
+import type { CartItem } from '../types';
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { addItem } = useCart();
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { addToCart, loading: isAddingToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { getCart } = useCart();
+  const [cart, setCart] = useState<CartItem>({ items: [], userId: '', _id: '', createdAt: '', updatedAt: '' });
+  
+  
+  // Handle adding product to cart
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    try {
+      // Create a new product object with all required fields
+      const cartProduct: Product = {
+        ...product,
+        image: product.images?.[0] || '',
+        rating: product.rating || 0,
+        reviews: product.reviews || 0,
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+        features: product.features || [],
+        ageGroup: product.ageGroup || '', 
+        gender: product.gender || 'unisex',
+        description: product.description || ''
+      };
+      
+      await addToCart(cartProduct, quantity);
+   
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      setNotification({
+        message: 'Failed to add item to cart. Please try again.',
+        type: 'error'
+      });
+    }
+  };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    getCart().then(setCart);
+  }, []);
+
 
 
   useEffect(() => {
@@ -46,15 +70,10 @@ export const ProductPage: React.FC = () => {
         
         const response = await apiGet<{ data: Product }>(`/products/${id}`);
         const productData = response;
-        setProduct(productData);
+        setProduct(productData as unknown as Product );
         
-        // Set default selections
-        if (productData.sizes?.length > 0) {
-          setSelectedSize(productData.sizes[0]);
-        }
-        if (productData.colors?.length > 0) {
-          setSelectedColor(productData.colors[0]);
-        }
+        // Initialize product data
+        // Note: Removed unused state setters
       } catch (err) {
         setError('Failed to load product. Please try again later.');
         console.error('Error fetching product:', err);
@@ -67,7 +86,17 @@ export const ProductPage: React.FC = () => {
       fetchProduct();
     }
   }, [id]);
+  // Calculate discount percentage
+  const discountPercentage = product?.originalPrice 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
 
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -81,43 +110,47 @@ export const ProductPage: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
         <p className="text-red-500 text-lg mb-4">{error || 'Product not found'}</p>
         <button
-          onClick={() => window.history.back()}
-          className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          onClick={handleAddToCart}
+          disabled={isAddingToCart}
+          className={`flex-1 bg-orange-500 text-white py-3 px-6 rounded-lg ${
+            isAddingToCart ? 'opacity-70 cursor-not-allowed' : 'hover:bg-orange-600'
+          } transition-colors flex items-center justify-center gap-2`}
         >
-          Go Back
+          {isAddingToCart ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Adding...
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m-7-7h6m0 0l3 3m-3-3l-3 3" />
+              </svg>
+              Add to Cart
+            </>
+          )}
         </button>
       </div>
     );
   }
 
-  const discountPercentage = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : 0;
 
-  const handleAddToCart = () => {
-    if (!product) return;
-    
-    const cartItem: CartProduct = {
-      _id: product._id,
-      name: product.name,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      image: product.images[0],
-      quantity,
-      size: selectedSize,
-      color: selectedColor,
-      maxQuantity: product.stock,
-      category: product.category,
-      ageGroup: product.ageGroup,
-      gender: product.gender,
-      features: product.details || []
-    };
-    
-    addItem(cartItem);
-  };
+
+
+
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="container mx-auto px-4 py-8">
+      {notification && (
+        <div className={`fixed top-4 right-4 p-4 rounded-md shadow-md z-50 ${
+          notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {notification.message}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="grid lg:grid-cols-2 gap-8 p-6 lg:p-8">
@@ -253,22 +286,36 @@ export const ProductPage: React.FC = () => {
                     </button>
                     <span className="text-lg font-semibold w-12 text-center">{quantity}</span>
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
+                      onClick={() => {
+                        if (quantity < product.stock) {
+                          setQuantity(quantity + 1);
+                        }
+                      }}
                       className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
                     >
                       +
                     </button>
                   </div>
+                  <p className="text-sm text-gray-600">Quantity: {product.stock}</p>
                 </div>
 
+                {cart.items.length>0?
+                <Link to='/cart'>
+                  <button
+                   className="w-full flex items-center justify-center space-x-2 py-4 bg-orange-500 text-white font-semibold 
+                   rounded-xl hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+                   <ShoppingCart className="w-5 h-5" />
+                   <span>Go to Cart</span>
+                   </button>
+                  </Link>:
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock===0}
+                  disabled={product.stock===0 || quantity===0}
                   className="w-full flex items-center justify-center space-x-2 py-4 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>{product.stock>0 ? 'Add to Cart' : 'Out of Stock'}</span>
-                </button>
+                  <span>{product.stock>0?'Add to Cart':'Out of Stock'}</span>
+                </button>}
               </div>
 
               {/* Features Cards */}

@@ -1,15 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { apiRequest } from './apiConfig';
+import { Product } from '../../types';
+import { CartItem } from '../../types';
+import { useCartContext } from '../../context/CartContext';
+
+
 
 export const useCart = () => {
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { setCount, clearCartData } = useCartContext();
 
-  const getCart = async () => {
+
+  // Load cart on mount
+  useEffect(() => {
+    getCart().catch(console.error);
+  }, []);
+
+
+
+  const getCart = async (): Promise<CartItem> => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/cart');
+      const response = await apiRequest<CartItem>('/cart');
+
+
+      return response as unknown as CartItem || {};
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch cart');
       throw err;
@@ -18,14 +36,24 @@ export const useCart = () => {
     }
   };
 
-  const addToCart = async (productId: string, quantity: number = 1) => {
+  const addToCart = async (product: Product, quantity: number = 1) => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/cart', {
+      const response = await apiRequest<CartItem>('/cart', {
         method: 'POST',
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({
+          productId: product._id,
+          quantity,
+          name: product.name,
+          price: product.price,
+          image: product.images?.[0] || ''
+        }),
       });
+
+
+      setCount(response.items.length);
+      return response as unknown as CartItem || {};
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add to cart');
       throw err;
@@ -35,13 +63,21 @@ export const useCart = () => {
   };
 
   const updateCartItem = async (productId: string, quantity: number) => {
+    if (quantity < 1) {
+      return removeFromCart(productId);
+    }
+
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/cart', {
+      const response = await apiRequest(`/cart/`, {
         method: 'PUT',
         body: JSON.stringify({ productId, quantity }),
       });
+
+
+      setCount(response.items.length);
+      return response as unknown as CartItem || {};
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update cart item');
       throw err;
@@ -54,11 +90,13 @@ export const useCart = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest(`/cart/${productId}`, {
+      await apiRequest(`/cart/${productId}`, {
         method: 'DELETE',
       });
+      const response = await apiRequest<CartItem>('/cart');
+      setCount(response.items.length);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove from cart');
+      setError(err instanceof Error ? err.message : 'Failed to remove item from cart');
       throw err;
     } finally {
       setLoading(false);
@@ -69,9 +107,12 @@ export const useCart = () => {
     setLoading(true);
     setError(null);
     try {
-      return await apiRequest('/cart', {
+      await apiRequest('/cart', {
         method: 'DELETE',
       });
+
+      // Update local state
+      clearCartData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to clear cart');
       throw err;
@@ -81,13 +122,13 @@ export const useCart = () => {
   };
 
   return {
+    loading,
+    error,
     getCart,
     addToCart,
     updateCartItem,
     removeFromCart,
     clearCart,
-    loading,
-    error,
   };
 };
 

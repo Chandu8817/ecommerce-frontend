@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart, Star, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/api/useCart';
+import { useCartContext } from '../context/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -10,12 +11,39 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' }) => {
-  const { addItem } = useCart();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addItem(product);
+
+ const {addToCart} = useCart();
+ 
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+ const handleAddToCart = async () => {
+    if (!product) return;
+    
+    try {
+      // Create a new product object with all required fields
+      const cartProduct: Product = {
+        ...product,
+        image: product.images?.[0] || '',
+        rating: product.rating || 0,
+        reviews: product.reviews || 0,
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+        features: product.features || [],
+        ageGroup: product.ageGroup || '', 
+        gender: product.gender || 'unisex',
+        description: product.description || ''
+      };
+      
+      await addToCart(cartProduct, 1);
+   
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      setNotification({
+        message: 'Failed to add item to cart. Please try again.',
+        type: 'error'
+      });
+    }
   };
 
   const discountPercentage = product.originalPrice 
