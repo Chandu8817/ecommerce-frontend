@@ -64,7 +64,7 @@ export const ProductPage: React.FC = () => {
         setLoading(false);
         return;
       }
-
+console.log(cart.items.length);
       try {
         setLoading(true);
         

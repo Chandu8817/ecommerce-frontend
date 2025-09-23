@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../hooks/api/useCart';
 import { Items, ShippingAddress,User } from '../types';
-import axios from "axios";
 import { useAuth } from '../hooks/api/useAuth';
 import { usePayment } from '../hooks/api/usePayment';
 declare global {
