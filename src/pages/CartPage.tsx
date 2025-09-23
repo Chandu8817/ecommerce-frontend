@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Edit, PlusCircle } from 'lucide-react';
 import { useCart } from '../hooks/api/useCart';
 import { Items, ShippingAddress,User } from '../types';
 import { useAuth } from '../hooks/api/useAuth';
 import { usePayment } from '../hooks/api/usePayment';
+import { AddressModal } from '../components/AddressModal';
 declare global {
   interface Window {
     Razorpay: any;
@@ -13,19 +14,34 @@ declare global {
 
 export const CartPage: React.FC = () => {
   const { getCart, updateCartItem, removeFromCart, clearCart } = useCart();
-  const { getCurrentUser, getShippingAddress } = useAuth();
+  const { getCurrentUser, getShippingAddress,addShippingAddress } = useAuth();
   const [items, setItems] = React.useState<Items[]>([]);
   const [userId, setUserId] = React.useState<string>("");
   const { createPaymentOrder, verifyPayment } = usePayment();
-  const [shippingAddress, setShippingAddress] = React.useState<ShippingAddress>({
-    name: "",
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    phone: "",
-    isDefault: false,
-  });
+  const [shippingAddress, setShippingAddress] = React.useState<ShippingAddress | null>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = React.useState(false);
+  const [editingAddress, setEditingAddress] = React.useState<ShippingAddress | null>(null);
+
+  const handleSaveAddress = async (addressData: Omit<ShippingAddress, '_id'>) => {
+    try {
+      await addShippingAddress(addressData);
+      const addresses = await getShippingAddress();
+      const defaultAddress = addresses?.find(addr => addr.isDefault) || null;
+      setShippingAddress(defaultAddress);
+    } catch (error) {
+      console.error('Failed to save address:', error);
+    }
+  };
+
+  const handleEditAddress = (address: ShippingAddress) => {
+    setEditingAddress(address);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleAddNewAddress = () => {
+    setEditingAddress(null);
+    setIsAddressModalOpen(true);
+  };
 
 
   React.useEffect(() => {
@@ -36,12 +52,17 @@ export const CartPage: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
-    getShippingAddress().then((addresses) => {
-      console.log(addresses);
-      const address = addresses?.filter((address:ShippingAddress) => address.isDefault);
-
-      setShippingAddress(address?.[0]);
-    });
+    const fetchAddress = async () => {
+      try {
+        const addresses = await getShippingAddress();
+        const defaultAddress = addresses?.find(addr => addr.isDefault) || null;
+        setShippingAddress(defaultAddress);
+      } catch (error) {
+        console.error('Failed to fetch shipping address:', error);
+      }
+    };
+    
+    fetchAddress();
   }, []);
 
   React.useEffect(() => {
@@ -105,7 +126,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
     name: "My Store",
     description: "Purchase",
     handler: async (response:any) => {
-      debugger
+      
       // 5️⃣ Verify payment & create DB order
       await verifyPayment(
         order?.id as string,
@@ -158,8 +179,17 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Shipping Address</h2>
+            <button
+              onClick={handleAddNewAddress}
+              className="flex items-center text-sm text-indigo-600 hover:text-indigo-800"
+            >
+              <PlusCircle className="w-4 h-4 mr-1" />
+              {shippingAddress ? 'Change Address' : 'Add Address'}
+            </button>
+          </div>
           <p className="text-gray-600 mt-2">{items.length} items in your cart</p>
         </div>
 
@@ -256,7 +286,48 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Address</span>
-                <span className="text-green-600">{`${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.zipCode}`}</span>
+               {shippingAddress ? (
+            <div className="relative p-4 border rounded-lg bg-gray-50">
+              <div className="flex justify-between">
+                <div>
+                  <p className="font-medium">{shippingAddress.name}</p>
+                  <p className="text-gray-600">{shippingAddress.street}</p>
+                  <p className="text-gray-600">
+                    {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}
+                  </p>
+                  <p className="text-gray-600">Phone: {shippingAddress.phone}</p>
+                  {shippingAddress.isDefault && (
+                    <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">
+                      Default
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleEditAddress(shippingAddress)}
+                  className="text-gray-500 hover:text-indigo-600"
+                  aria-label="Edit address"
+                >
+                  <Edit className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            ) : (
+              <div className="text-center py-8">
+                <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No shipping address</h3>
+                <p className="mt-1 text-sm text-gray-500">Add a shipping address to proceed with your order.</p>
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    onClick={handleAddNewAddress}
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                    Add Shipping Address
+                  </button>
+                </div>
+              </div>
+            )}
               </div>
               <hr />
               <div className="flex justify-between text-lg font-semibold">
@@ -265,7 +336,11 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
               </div>
             </div>
 
-            <button onClick={() => handleCheckout(items,userId,shippingAddress)} className="w-full bg-orange-500 text-white font-semibold py-4 rounded-xl hover:bg-orange-600 transition-colors">
+            <button 
+            disabled={!shippingAddress}
+             onClick={() => handleCheckout(items,userId,shippingAddress)} 
+             className={`${!shippingAddress ? 'disabled:bg-gray-500 cursor-not-allowed' : 'bg-orange-500 cursor-pointer'} w-full disabled:bg-gray-500 bg-orange-500 text-white font-semibold py-4 rounded-xl hover:bg-orange-600 transition-colors`}
+              >
               Proceed to Checkout
             </button>
 
@@ -275,6 +350,14 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
           </div>
         </div>
       </div>
+
+      <AddressModal
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        onSubmit={handleSaveAddress}
+        initialData={editingAddress || {}}
+        title={editingAddress ? 'Edit Shipping Address' : 'Add New Shipping Address'}
+      />
     </div>
   );
 };

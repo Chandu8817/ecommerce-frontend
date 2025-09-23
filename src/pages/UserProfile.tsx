@@ -11,7 +11,7 @@ export const UserProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [addresses, setAddresses] = useState<ShippingAddress[]>([]);
-  const { getCurrentUser, isAuthenticated, getShippingAddress, addShippingAddress } = useAuth();
+  const { getCurrentUser, isAuthenticated, getShippingAddress, addShippingAddress,removeShippingAddress } = useAuth();
   const { getOrdersByUser } = useOrders();
   const [orders, setOrders] = useState<Order[]>([]);
  
@@ -95,8 +95,12 @@ export const UserProfile: React.FC = () => {
     });
   };
 
-  const removeAddress = (id: number) => {
+  const removeAddress = async (id: number) => {
+   const response= await removeShippingAddress(id);
+   console.log(response);
+   if(response){
     setAddresses(prev => prev.filter((_,index) => index !== id));
+   }
   };
 
   const setDefaultAddress = (id: number) => {
@@ -190,8 +194,8 @@ export const UserProfile: React.FC = () => {
                     <div className="text-right">
                       <p className="font-medium">${order.totalAmount || 0}</p>
                       <span className={`px-2 py-1 text-xs rounded-full ${
-                        order?.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                        order?.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                        order?.status as string === 'Delivered' ? 'bg-green-100 text-green-800' :
+                        order?.status as string === 'Shipped' ? 'bg-blue-100 text-blue-800' :
                         'bg-yellow-100 text-yellow-800'
                       }`}>
                         {order.status}

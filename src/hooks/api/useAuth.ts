@@ -104,10 +104,26 @@ export const useAuth = () => {
     }
   };
 
+  const removeShippingAddress = async (id: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest(`/auth/shipping-address/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove shipping address');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const isAuthenticated = () => {
     return !!localStorage.getItem('token');
   };
+
 
   return {
     register,
@@ -116,6 +132,7 @@ export const useAuth = () => {
     getCurrentUser,
     addShippingAddress,
     getShippingAddress,
+    removeShippingAddress,
     isAuthenticated,
     loading,
     error,
