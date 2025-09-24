@@ -95,7 +95,7 @@ export const CartPage: React.FC = () => {
       setItems([]);
     });
   };
-
+// push changes to github
 
 const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
   // 1️⃣ Calculate total amount
