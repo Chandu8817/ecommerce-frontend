@@ -119,6 +119,52 @@ export const useAuth = () => {
     }
   };
 
+    const registerAdmin = async (userData: { email: string; password: string; name: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const userDataAdmin = { ...userData, role: "admin" }
+      const data = await apiRequest<User>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userDataAdmin),
+      });
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginAdmin = async (credentials: { email: string; password: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role',data.data.role);
+      }
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+
+
 
   const isAuthenticated = () => {
     return !!localStorage.getItem('token');
@@ -127,6 +173,8 @@ export const useAuth = () => {
 
   return {
     register,
+    registerAdmin,
+    loginAdmin,
     login,
     logout,
     getCurrentUser,

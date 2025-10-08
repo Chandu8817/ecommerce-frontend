@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearchChange, searchQuery }) =
                       <ul className="py-1">
                         <li>
                           <Link 
-                            to="/profile" 
+                            to={user.role=="admin"?"/admin":`/profile/}`} 
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             onClick={() => setIsDropdownOpen(false)}
                           >

@@ -6,6 +6,7 @@ import { useProducts } from '../hooks/api/useProducts';
 import { FilterOptions, Product } from '../types';
 import { Filter, Grid, List } from 'lucide-react';
 import { Hero } from '../components/Hero';
+import { Loading } from '../components/UI/Loading';
 
 interface HomePageProps {
   searchQuery: string;
@@ -31,25 +32,25 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
     priceRange: [0, 5000],
     sortBy: 'featured'
   });
-  
+
   const { getPaginatedProducts } = useProducts();
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchProducts = useCallback(async (page: number = 1, filtersToApply: Partial<FilterOptions> = {}, loadMore: boolean = false) => {
     console.log('Fetching products - Page:', page, 'Load more:', loadMore);
-    
+
     // Update loading states immediately
     if (loadMore) {
       setIsLoadingMore(true);
     } else {
       setIsLoading(true);
     }
-    
+
     try {
       // Use filters directly since we're already merging in the function parameters
 
       const apiFilters: any = {};
-      
+
       if (filtersToApply.category !== 'All') apiFilters.category = filtersToApply.category;
       if (filtersToApply.ageGroup !== 'All') apiFilters.ageGroup = filtersToApply.ageGroup;
       if (filtersToApply.gender !== 'All') apiFilters.gender = filtersToApply.gender;
@@ -58,20 +59,20 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
         apiFilters.sortOrder = 'desc';
       }
       if (filtersToApply.priceRange) {
-        apiFilters.price = {min:filtersToApply.priceRange[0],max:filtersToApply.priceRange[1]};
-        
+        apiFilters.price = { min: filtersToApply.priceRange[0], max: filtersToApply.priceRange[1] };
+
       }
 
       const response = await getPaginatedProducts(page, pagination.pageSize, apiFilters);
-      
+
       const data = response.data || response?.products;
-      
+
       setProducts(prev => loadMore ? [...prev, ...data] : data);
-      
+
       // setSkip(prev => loadMore ? prev + pagination.pageSize : pagination.pageSize);
       const hasMore = data.length === pagination.pageSize;
       console.log('Fetch complete - Page:', page, 'Items received:', data.length, 'Has more:', hasMore);
-      
+
       setPagination(prev => ({
         ...prev,
         page,
@@ -79,7 +80,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
         totalPages: response.totalPages,
         hasMore
       }));
-      
+
       return response;
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -101,7 +102,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
       console.log('No observer target found');
       return;
     }
-    
+
     let isMounted = true;
 
     console.log('Setting up intersection observer');
@@ -111,7 +112,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
       (entries) => {
         const [entry] = entries;
         console.log('Intersection entry:', entry.isIntersecting);
-        
+
         if (entry.isIntersecting && isMounted) {
           setPagination(prev => {
             if (prev.hasMore && !isLoadingMore && !isLoading) {
@@ -123,7 +124,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
           });
         }
       },
-      { 
+      {
         root: null,
         rootMargin: '100px',
         threshold: 0.01
@@ -132,7 +133,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
 
     observer.observe(target);
     console.log('Observer attached to target');
-    
+
     return () => {
       console.log('Cleaning up observer');
       isMounted = false;
@@ -144,7 +145,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
   useEffect(() => {
     console.log('Filters changed, resetting products and pagination');
     let isMounted = true;
-    
+
     const loadInitialProducts = async () => {
       setProducts([]);
       setPagination(prev => ({
@@ -152,7 +153,7 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
         page: 1,
         hasMore: true
       }));
-      
+
       try {
         await fetchProducts(1, filters);
         // Smooth scroll to top when filters change
@@ -164,9 +165,9 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
         console.error('Error loading products:', error);
       }
     };
-    
+
     loadInitialProducts();
-    
+
     return () => {
       isMounted = false;
     };
@@ -190,11 +191,11 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
   // Client-side filtering for search since we want instant feedback
   const filteredProducts = useMemo(() => {
     if (!searchQuery) return products;
-    
+
     return products.filter(product => {
       return product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-             product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-             product.category.toLowerCase().includes(searchQuery.toLowerCase());
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [products, searchQuery]);
 
@@ -202,8 +203,8 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-         {/* Hero Section - Only show when no search query */}
-          {!searchQuery && <Hero />}
+      {/* Hero Section - Only show when no search query */}
+      {!searchQuery && <Hero />}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -242,8 +243,8 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
                 <button
                   onClick={() => fetchProducts(pagination.page - 1, filters)}
                   disabled={pagination.page === 1}
-                  className={`px-4 py-2 rounded-lg border ${pagination.page === 1 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  className={`px-4 py-2 rounded-lg border ${pagination.page === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                 >
                   Previous
@@ -261,13 +262,13 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
                     } else {
                       pageNum = pagination.page - 2 + i;
                     }
-                    
+
                     return (
                       <button
                         key={pageNum}
                         onClick={() => fetchProducts(pageNum, filters)}
-                        className={`w-10 h-10 rounded-lg ${pagination.page === pageNum 
-                          ? 'bg-orange-500 text-white' 
+                        className={`w-10 h-10 rounded-lg ${pagination.page === pageNum
+                          ? 'bg-orange-500 text-white'
                           : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                       >
                         {pageNum}
@@ -281,8 +282,8 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
                 <button
                   onClick={() => fetchProducts(pagination.page + 1, filters)}
                   disabled={!pagination.hasMore}
-                  className={`px-4 py-2 rounded-lg border ${!pagination.hasMore 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  className={`px-4 py-2 rounded-lg border ${!pagination.hasMore
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                 >
                   Next
@@ -333,29 +334,26 @@ export const HomePage: React.FC<HomePageProps> = ({ searchQuery }) => {
                 </div>
               ) : filteredProducts.length > 0 ? (
                 <div className="space-y-6">
-                  <div className={`grid gap-6 ${
-                    viewMode === 'grid'
+                  <div className={`grid gap-6 ${viewMode === 'grid'
                       ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                       : 'grid-cols-1'
-                  }`}>
-                    {filteredProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} viewMode={viewMode} />
+                    }`}>
+                    {filteredProducts.map((product: Product) => (
+                      <ProductCard key={product._id} product={product} viewMode={viewMode} />
                     ))}
                   </div>
-                  
+
                   {isLoadingMore && (
-                    <div className="flex justify-center py-4">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
-                    </div>
+                    <Loading />
                   )}
-                  
+
                   {/* Observer target for infinite scroll */}
-                  <div 
-                    ref={pagination.hasMore ? observerTarget : null} 
+                  <div
+                    ref={pagination.hasMore ? observerTarget : null}
                     className="h-10 w-full"
-                    style={{ background: 'rgba(255,0,0,0.1)' }}
+
                   >
-                    {pagination.hasMore && 'Scroll to load more'}
+                    {pagination.hasMore && ''}
                   </div>
                 </div>
               ) : (

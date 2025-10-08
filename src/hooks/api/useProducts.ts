@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { apiRequest } from './apiConfig';
-import { Product } from '../../types';
+import { Product,AddProductData } from '../../types';
 
 export interface ProductFilters {
   category?: string;
@@ -23,6 +23,8 @@ export interface PaginatedResponse<T> {
   totalPages: number;
   hasMore: boolean;
 }
+
+
 
 export const useProducts = () => {
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,7 @@ export const useProducts = () => {
       const queryString = queryParams.toString();
       const url = `/products${queryString ? `?${queryString}` : ''}`;
       
-      const response = await apiRequest(url) as PaginatedResponse<Product>;
+      const response = await apiRequest(url) as unknown as PaginatedResponse<Product>;
       return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch products');
@@ -91,15 +93,15 @@ export const useProducts = () => {
   };
 
   // Admin only
-  const addProduct = async (productData: FormData) => {
+  const addProduct = async (productData: AddProductData) => {
     setLoading(true);
     setError(null);
     try {
       return await apiRequest('/products', {
         method: 'POST',
-        body: productData,
+        body: JSON.stringify(productData),
         headers: {
-          // Let the browser set the content type with boundary for FormData
+          'Content-Type': 'application/json',
         },
       });
     } catch (err) {
@@ -136,6 +138,79 @@ export const useProducts = () => {
       skip,
     });
   };
+  const getTotalCount = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest('/products/total-count');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get total count');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+  const deleteProduct = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest(`/products/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProducts = async (ids: string[]) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest('/products', {
+        method: 'DELETE',
+        body: JSON.stringify({ids:ids}),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete products');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+  const updateProduct = async (id: string, productData: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest(`/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(productData),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update product');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProducts = async (ids: string[], productData: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await apiRequest('/products', {
+        method: 'PUT',
+        body: JSON.stringify({ ids, productData }),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update products');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     getProducts,
@@ -144,6 +219,11 @@ export const useProducts = () => {
     filterProducts,
     addProduct,
     addProducts,
+    getTotalCount,
+    deleteProduct,
+    deleteProducts,
+    updateProduct,
+    updateProducts,
     loading,
     error,
   };

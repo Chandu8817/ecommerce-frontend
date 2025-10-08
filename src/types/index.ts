@@ -24,6 +24,22 @@ export interface Product {
   reviews: number;
 }
 
+export interface AddProductData {
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    category: string;
+    images: string[];
+    sizes?: string[];
+    colors?: string[];
+    ageGroup: string;
+    gender: string;
+    features: string[];
+    quantity?: number;
+    maxQuantity?: number;
+}
+
 export interface Items {
   productId: Product;
   quantity: number;

@@ -7,6 +7,8 @@ import {ShopPage} from './pages/ShopPage';
 import { ProductPage } from './pages/ProductPage';
 import { CartPage } from './pages/CartPage';
 import { UserProfile } from './pages/UserProfile';
+import AdminRoute from './pages/admin/AdminRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,6 +22,14 @@ function App() {
             searchQuery={searchQuery}
           />
           <Routes>
+             <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard/>
+              </AdminRoute>
+            }
+          />
             <Route 
               path="/" 
               element={<HomePage searchQuery={searchQuery} />} 

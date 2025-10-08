@@ -5,6 +5,7 @@ import { useCart } from '../hooks/api/useCart';
 import { apiGet } from '../hooks/api/apiConfig';
 import type { Product } from '../types';
 import type { CartItem } from '../types';
+import API_BASE_URL from '../config';
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,9 @@ export const ProductPage: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { getCart } = useCart();
   const [cart, setCart] = useState<CartItem>({ items: [], userId: '', _id: '', createdAt: '', updatedAt: '' });
-  
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const images = product?.images || [];
+  const staticBase = API_BASE_URL.replace("/api", "");
   
   // Handle adding product to cart
   const handleAddToCart = async () => {
@@ -154,38 +157,34 @@ console.log(cart.items.length);
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="grid lg:grid-cols-2 gap-8 p-6 lg:p-8">
-            {/* Product Images */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
-                <img
-                  src={product.images[selectedImageIndex] || product.images[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          <div className="flex flex-col items-center space-y-3 w-full max-w-md mx-auto">
+      {/* Image display */}
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100">
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={`${staticBase}${img}`}
+            alt={product.name}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+              index === selectedIndex ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
+      </div>
 
-              {/* Image Thumbnails */}
-              {product.images.length > 1 && (
-                <div className="flex space-x-2">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                        selectedImageIndex === index ? 'border-orange-500' : 'border-gray-200'
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`${product.name} view ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+      {/* Dots */}
+      <div className="flex justify-center space-x-2 mt-2">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedIndex(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === selectedIndex ? "bg-blue-500" : "bg-gray-300"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
 
             {/* Product Info */}
             <div className="space-y-6">

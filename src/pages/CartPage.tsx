@@ -6,6 +6,7 @@ import { Items, ShippingAddress,User } from '../types';
 import { useAuth } from '../hooks/api/useAuth';
 import { usePayment } from '../hooks/api/usePayment';
 import { AddressModal } from '../components/AddressModal';
+import { Loading } from '../components/UI/Loading';
 declare global {
   interface Window {
     Razorpay: any;
@@ -15,6 +16,7 @@ declare global {
 export const CartPage: React.FC = () => {
   const { getCart, updateCartItem, removeFromCart, clearCart } = useCart();
   const { getCurrentUser, getShippingAddress,addShippingAddress } = useAuth();
+  const [loading, setLoading] = React.useState(false);
   const [items, setItems] = React.useState<Items[]>([]);
   const [userId, setUserId] = React.useState<string>("");
   const { createPaymentOrder, verifyPayment } = usePayment();
@@ -66,8 +68,10 @@ export const CartPage: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
+    setLoading(true);
     getCart().then((cart) => {
       setItems(cart.items);
+      setLoading(false);
       
     });
   }, []);
@@ -93,6 +97,7 @@ export const CartPage: React.FC = () => {
   const clearCartItems = () => {
     clearCart().then(() => {
       setItems([]);
+      window.location.href = '/profile';
     });
   };
 // push changes to github
@@ -128,7 +133,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
     handler: async (response:any) => {
       
       // 5️⃣ Verify payment & create DB order
-      await verifyPayment(
+     const verifyPaymentResponse = await verifyPayment(
         order?.id as string,
         response.razorpay_payment_id,
         response.razorpay_signature,
@@ -140,7 +145,10 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
           paymentMethod: "razorpay",
         },
       );
-      alert("Payment successful!");
+      if(verifyPaymentResponse){
+        clearCartItems();
+        alert("Payment successful!");
+      }
     },
     prefill: {
       name: "Test User",
@@ -157,7 +165,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
 };
 
 
-  if (items.length === 0) {
+  if (items.length === 0 && !loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -171,6 +179,18 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
             <span>Start Shopping</span>
             <ArrowRight className="w-5 h-5" />
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+          <Loading/>
+          <p className="text-gray-600 mb-8">Please wait while we load your cart.</p>
         </div>
       </div>
     );
