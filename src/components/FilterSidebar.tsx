@@ -16,8 +16,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onClose
 }) => {
   const categories = ['All', 'Traditional', 'Casual', 'Formal', 'Party Wear'];
-  const ageGroups = ['All', '0-2 years', '3-5 years', '6-8 years', '9-12 years', '13-16 years'];
-  const genders = ['All', 'Boys', 'Girls', 'Unisex'];
+  const ageGroups = ['All', '14-17', '18-25', '26-35', '36+'];
+  const genders = ['All', 'Men', 'Women', 'Boys', 'Girls', 'Unisex'];
   const sortOptions = [
     { value: 'featured', label: 'Featured' },
     { value: 'price-low', label: 'Price: Low to High' },
@@ -71,7 +71,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <div className="flex items-center space-x-2">
               <button
                 onClick={clearFilters}
-                className="text-sm text-orange-600 hover:text-orange-700"
+                className="text-sm font-medium text-accent-600 hover:text-accent-700"
               >
                 Clear All
               </button>
@@ -90,7 +90,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <select
               value={filters.sortBy}
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
+              className="w-full p-2 border border-gray-300 rounded-lg focus:border-ink-900 focus:outline-none"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -112,7 +112,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     value={category}
                     checked={filters.category === category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="mr-2 text-orange-500 focus:ring-orange-500"
+                    className="mr-2 accent-neutral-900 focus:ring-ink-900"
                   />
                   <span className="text-sm">{category}</span>
                 </label>
@@ -132,7 +132,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     value={age}
                     checked={filters.ageGroup === age}
                     onChange={(e) => handleFilterChange('ageGroup', e.target.value)}
-                    className="mr-2 text-orange-500 focus:ring-orange-500"
+                    className="mr-2 accent-neutral-900 focus:ring-ink-900"
                   />
                   <span className="text-sm">{age}</span>
                 </label>
@@ -152,7 +152,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     value={gender}
                     checked={filters.gender === gender}
                     onChange={(e) => handleFilterChange('gender', e.target.value)}
-                    className="mr-2 text-orange-500 focus:ring-orange-500"
+                    className="mr-2 accent-neutral-900 focus:ring-ink-900"
                   />
                   <span className="text-sm">{gender}</span>
                 </label>
@@ -173,7 +173,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 onChange={(e) => handleFilterChange('priceRange', [0, parseInt(e.target.value)])}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                 style={{
-                  background: `linear-gradient(to right, #f97316 0%, #f97316 ${filters.priceRange[1] / 50}%, #e5e7eb ${filters.priceRange[1] / 50}%, #e5e7eb 100%)`
+                  background: `linear-gradient(to right, #111113 0%, #111113 ${filters.priceRange[1] / 50}%, #e5e7eb ${filters.priceRange[1] / 50}%, #e5e7eb 100%)`
                 }}
               />
               <div className="flex justify-between text-sm text-gray-600 mt-2">

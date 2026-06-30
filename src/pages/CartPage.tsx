@@ -174,7 +174,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
           <p className="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
           <Link
             to="/shop"
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-ink-900 text-white font-semibold rounded-full hover:bg-ink-800 transition-colors"
           >
             <span>Start Shopping</span>
             <ArrowRight className="w-5 h-5" />
@@ -199,33 +199,34 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Shipping Address</h2>
+        <h1 className="font-display text-3xl font-bold text-neutral-900 mb-6">Your Cart</h1>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-200">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold text-neutral-900">Shipping Address</h2>
             <button
               onClick={handleAddNewAddress}
-              className="flex items-center text-sm text-indigo-600 hover:text-indigo-800"
+              className="flex items-center text-sm font-medium text-accent-600 hover:text-accent-700"
             >
               <PlusCircle className="w-4 h-4 mr-1" />
               {shippingAddress ? 'Change Address' : 'Add Address'}
             </button>
           </div>
-          <p className="text-gray-600 mt-2">{items.length} items in your cart</p>
+          <p className="text-sm text-gray-500">{items.length} items in your cart</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 mt-6">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item,index) => (
               
-              <div key={index} className="bg-white rounded-xl p-6 shadow-sm border">
+              <div key={index} className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-neutral-200">
                 <div className="flex items-start space-x-4">
                   {/* Product Image */}
                   <Link to={`/product/${item.productId._id}`} className="flex-shrink-0">
                     <img
                       src={item.productId.images[0]}
                       alt={item.productId.name}
-                      className="w-20 h-20 object-cover rounded-lg"
+                      className="w-20 h-20 object-cover rounded-xl"
                     />
                   </Link>
 
@@ -233,7 +234,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
                   <div className="flex-1 min-w-0">
                     <Link
                       to={`/product/${item.productId._id}`}
-                      className="text-lg font-semibold text-gray-900 hover:text-orange-600 transition-colors"
+                      className="text-lg font-semibold text-gray-900 hover:text-accent-600 transition-colors"
                     >
                       {item.productId.name}
                     </Link>
@@ -284,15 +285,15 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
               </button>
               <Link
                 to="/shop"
-                className="text-orange-500 hover:text-orange-700 transition-colors"
+                className="font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
               >
-                Continue Shopping
+                Continue Shopping →
               </Link>
             </div>
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border h-fit sticky top-24">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-200 h-fit sticky top-28">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
             
             <div className="space-y-3 mb-6">
@@ -324,7 +325,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
                 </div>
                 <button
                   onClick={() => handleEditAddress(shippingAddress)}
-                  className="text-gray-500 hover:text-indigo-600"
+                  className="text-gray-500 hover:text-accent-600"
                   aria-label="Edit address"
                 >
                   <Edit className="w-5 h-5" />
@@ -340,7 +341,7 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
                   <button
                     type="button"
                     onClick={handleAddNewAddress}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-full text-white bg-ink-900 hover:bg-ink-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink-900"
                   >
                     <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
                     Add Shipping Address
@@ -356,10 +357,10 @@ const handleCheckout = async (cart:any,userId:string,shippingAddress:any) => {
               </div>
             </div>
 
-            <button 
+            <button
             disabled={!shippingAddress}
-             onClick={() => handleCheckout(items,userId,shippingAddress)} 
-             className={`${!shippingAddress ? 'disabled:bg-gray-500 cursor-not-allowed' : 'bg-orange-500 cursor-pointer'} w-full disabled:bg-gray-500 bg-orange-500 text-white font-semibold py-4 rounded-xl hover:bg-orange-600 transition-colors`}
+             onClick={() => handleCheckout(items,userId,shippingAddress)}
+             className={`${!shippingAddress ? 'cursor-not-allowed bg-neutral-400' : 'cursor-pointer bg-ink-900 hover:bg-ink-800'} w-full text-white font-semibold py-4 rounded-full transition-colors`}
               >
               Proceed to Checkout
             </button>

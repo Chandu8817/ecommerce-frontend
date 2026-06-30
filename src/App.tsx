@@ -16,7 +16,7 @@ function App() {
   return (
     <CartProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 antialiased">
           <Header 
             onSearchChange={setSearchQuery}
             searchQuery={searchQuery}

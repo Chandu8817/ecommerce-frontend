@@ -265,7 +265,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ searchQuery }) => {
                         key={pageNum}
                         onClick={() => fetchProducts(pageNum, filters)}
                         className={`w-10 h-10 rounded-lg ${pagination.page === pageNum
-                          ? 'bg-orange-500 text-white'
+                          ? 'bg-ink-900 text-white'
                           : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                       >
                         {pageNum}
@@ -300,23 +300,23 @@ export const ShopPage: React.FC<ShopPageProps> = ({ searchQuery }) => {
                 </button>
 
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    {searchQuery ? `Search results for "${searchQuery}"` : 'All Products'}
+                  <h2 className="font-display text-2xl font-bold text-neutral-900">
+                    {searchQuery ? `Results for “${searchQuery}”` : 'All Products'}
                   </h2>
-                  <p className="text-gray-600">{filteredProducts.length} products found</p>
+                  <p className="text-sm text-neutral-500">{filteredProducts.length} products found</p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-ink-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-orange-100 text-orange-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-ink-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -327,12 +327,12 @@ export const ShopPage: React.FC<ShopPageProps> = ({ searchQuery }) => {
             <div className="relative">
               {isLoading && !isLoadingMore ? (
                 <div className="flex justify-center items-center py-20">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ink-900"></div>
                 </div>
               ) : filteredProducts.length > 0 ? (
                 <div className="space-y-6">
-                  <div className={`grid gap-6 ${viewMode === 'grid'
-                      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid'
+                      ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
                       : 'grid-cols-1'
                     }`}>
                     {filteredProducts.map((product) => (
@@ -369,7 +369,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ searchQuery }) => {
                       priceRange: [0, 5000],
                       sortBy: 'featured'
                     })}
-                    className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                    className="mt-4 px-6 py-2.5 bg-ink-900 text-white rounded-full hover:bg-ink-800 transition-colors"
                   >
                     Clear Filters
                   </button>

@@ -71,6 +71,8 @@ export interface User {
   phone?: string;
   token: string;
   role: string;
+  picture?: string;
+  googleId?: string;
 }
 export interface ShippingAddress {
   name: string,

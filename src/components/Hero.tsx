@@ -1,7 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Truck, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBanners } from '../hooks/api/useBanners';
+
+const FALLBACK_IMAGE =
+  'https://github.com/Chandu8817/ecommerce-backend/blob/main/demo-images/navrarti-banner.jpg?raw=true';
+
+const HighlightStrip: React.FC = () => (
+  <div className="grid grid-cols-3 gap-3 border-t border-neutral-200 pt-6">
+    {[
+      { icon: <Truck className="h-5 w-5" />, label: 'Free shipping', sub: 'Over ₹999' },
+      { icon: <RefreshCcw className="h-5 w-5" />, label: 'Easy returns', sub: '30 days' },
+      { icon: <ShieldCheck className="h-5 w-5" />, label: 'Secure pay', sub: '100% safe' },
+    ].map((f) => (
+      <div key={f.label} className="flex items-center gap-2.5">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-50 text-accent-600">
+          {f.icon}
+        </span>
+        <div className="leading-tight">
+          <div className="text-sm font-semibold text-neutral-900">{f.label}</div>
+          <div className="text-xs text-neutral-500">{f.sub}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export const Hero: React.FC = () => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -20,7 +43,6 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        // Fetch only active hero banners
         const response = await getActiveBanners('hero', 'top');
         if (response && response.data && response.data.length > 0) {
           setBanners(response.data);
@@ -29,253 +51,196 @@ export const Hero: React.FC = () => {
         console.error('Error fetching banners:', err);
       }
     };
-
     fetchBanners();
   }, [getActiveBanners]);
 
-  // Auto-rotate banners every 8 seconds
   useEffect(() => {
     if (banners.length <= 1) return;
-    
     const timer = setInterval(() => {
-      setCurrentBannerIndex((prevIndex) => 
-        prevIndex === banners.length - 1 ? 0 : prevIndex + 1
-      );
+      setCurrentBannerIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
     }, 8000);
-
     return () => clearInterval(timer);
   }, [banners.length]);
 
-  const goToNextBanner = () => {
-    setCurrentBannerIndex((prevIndex) => 
-      prevIndex === banners.length - 1 ? 0 : prevIndex + 1
-    );
-  };
+  const goToNextBanner = () =>
+    setCurrentBannerIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+  const goToPrevBanner = () =>
+    setCurrentBannerIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
 
-  const goToPrevBanner = () => {
-    setCurrentBannerIndex((prevIndex) =>
-      prevIndex === 0 ? banners.length - 1 : prevIndex - 1
-    );
-  };
-
-  // Show loading state
+  // Loading state
   if (loading && banners.length === 0) {
     return (
-      <div className="relative bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 overflow-hidden h-[600px] flex items-center justify-center">
-        <div className="animate-pulse text-center space-y-4">
-          <div className="h-8 w-48 bg-gray-200 rounded mx-auto"></div>
-          <div className="h-12 w-3/4 bg-gray-200 rounded mx-auto"></div>
+      <div className="flex h-[460px] items-center justify-center bg-neutral-100 lg:h-[560px]">
+        <div className="animate-pulse space-y-4 text-center">
+          <div className="mx-auto h-8 w-48 rounded bg-neutral-200" />
+          <div className="mx-auto h-12 w-72 rounded bg-neutral-200" />
         </div>
       </div>
     );
   }
 
-  // Show error state
+  // Error state
   if (error && banners.length === 0) {
     return (
-      <div className="relative bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 overflow-hidden h-[600px] flex items-center justify-center">
-        <div className="text-center text-red-600 p-4">
-          <p>Failed to load banners. Please try again later.</p>
-        </div>
+      <div className="flex h-[360px] items-center justify-center bg-neutral-100">
+        <p className="px-4 text-center text-neutral-600">
+          Couldn’t load featured banners. Browse the collection below.
+        </p>
       </div>
     );
   }
 
-  // If no banners, show default content
+  // Default content (no banners configured)
   if (banners.length === 0) {
     return (
-      <div className="relative bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 overflow-hidden">
-        {/* Background decorative elements with pointer-events-none */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-10 left-10 w-20 h-20 border-4 border-orange-400 rounded-full animate-pulse"></div>
-          <div className="absolute top-32 right-20 w-16 h-16 border-4 border-red-400 rounded-lg rotate-45 animate-bounce"></div>
-          <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-yellow-400 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-32 right-1/3 w-14 h-14 border-4 border-orange-400 rounded-lg rotate-12"></div>
-        </div>
+      <section className="relative overflow-hidden bg-neutral-50">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
+            <div className="space-y-7 animate-fade-in-up">
+              <span className="inline-flex items-center gap-2 rounded-full bg-ink-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-accent-400">
+                <Sparkles className="h-4 w-4" />
+                New Season · 2026
+              </span>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 text-orange-600">
-                  <Sparkles className="w-5 h-5" />
-                  <span className="text-sm font-semibold uppercase tracking-wider">
-                    Premium Kids Fashion
-                  </span>
-                </div>
-                
-                <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  Beautiful
-                  <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-                    {" "}Indian{" "}
-                  </span>
-                  Wear for Kids
-                </h1>
-                
-                <p className="text-lg lg:text-xl text-gray-600 leading-relaxed">
-                  Discover our exquisite collection of traditional and contemporary clothing 
-                  designed specially for Indian children. From vibrant festival wear to 
-                  comfortable everyday outfits.
-                </p>
-              </div>
+              <h1 className="font-display text-4xl font-bold leading-[1.1] text-neutral-900 sm:text-5xl lg:text-6xl">
+                Indian fashion,
+                <span className="block text-accent-600">for everyone.</span>
+              </h1>
 
-              <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+              <p className="max-w-md text-base leading-relaxed text-neutral-600 sm:text-lg">
+                From everyday essentials to statement ethnic wear — discover curated styles for
+                men, women and teens, all in one place.
+              </p>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
                   to="/shop"
-                  className="relative z-10 inline-flex items-center justify-center px-8 py-4 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all duration-300 hover:scale-105 shadow-lg"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-ink-900 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-ink-800 hover:shadow-lg"
                 >
-                  Shop Collection
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  Shop the collection
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/shop"
+                  className="inline-flex items-center justify-center rounded-full border border-neutral-300 px-7 py-3.5 text-sm font-semibold text-neutral-800 transition-colors hover:border-neutral-900"
+                >
+                  Explore new in
                 </Link>
               </div>
+
+              <HighlightStrip />
             </div>
-            <div className="relative h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-xl">
-              <img
-                src="/images/default-hero.jpg"
-                alt="Kids Fashion"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = 'https://github.com/Chandu8817/ecommerce-backend/blob/main/demo-images/navrarti-banner.jpg?raw=true';
-                }}
-              />
+
+            <div className="relative">
+              <div className="overflow-hidden rounded-[1.75rem] shadow-2xl">
+                <img
+                  src="/images/default-hero.jpg"
+                  alt="RawBharat fashion"
+                  className="h-80 w-full object-cover sm:h-[460px] lg:h-[560px]"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+                  }}
+                />
+              </div>
+              <div className="absolute -left-4 bottom-6 hidden rounded-2xl bg-white p-4 shadow-xl sm:block">
+                <div className="text-2xl font-bold text-neutral-900">4.8★</div>
+                <div className="text-xs text-neutral-500">Rated by 10k+ shoppers</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
-  // Show dynamic banner content
+  // Dynamic banners
   const currentBanner = banners[currentBannerIndex];
   const hasMultipleBanners = banners.length > 1;
 
   return (
-    <div className="relative bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 overflow-hidden">
-      {/* Background Image */}
+    <section className="relative overflow-hidden bg-neutral-900">
       <div className="absolute inset-0">
         <img
           src={currentBanner.imageUrl}
           alt={currentBanner.title}
-          className="w-full h-full object-cover object-center opacity-10"
+          className="h-full w-full object-cover object-center opacity-30"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
+          }}
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/90 via-neutral-950/70 to-transparent" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 relative">
-        {/* Navigation Arrows */}
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-28">
         {hasMultipleBanners && (
           <>
             <button
               onClick={goToPrevBanner}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-gray-800 hover:bg-white transition-all shadow-lg"
+              className="absolute left-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
               aria-label="Previous banner"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={goToNextBanner}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-gray-800 hover:bg-white transition-all shadow-lg"
+              className="absolute right-3 top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25"
               aria-label="Next banner"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="h-5 w-5" />
             </button>
           </>
         )}
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              {currentBanner.subtitle && (
-                <div className="flex items-center space-x-2 text-orange-600">
-                  <Sparkles className="w-5 h-5" />
-                  <span className="text-sm font-semibold uppercase tracking-wider">
-                    {currentBanner.subtitle}
-                  </span>
-                </div>
-              )}
-              
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                {currentBanner.title}
-              </h1>
-              
-              {currentBanner.description && (
-                <p className="text-lg lg:text-xl text-gray-600 leading-relaxed">
-                  {currentBanner.description}
-                </p>
-              )}
-            </div>
+        <div className="max-w-2xl space-y-6 text-white">
+          {currentBanner.subtitle && (
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-accent-400 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4" />
+              {currentBanner.subtitle}
+            </span>
+          )}
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                to={currentBanner.linkUrl || '/shop'}
-                className="inline-flex items-center justify-center px-8 py-4 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                {currentBanner.buttonText || 'Shop Now'}
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-              
-              <Link
-                to="/traditional"
-                className="inline-flex items-center justify-center px-8 py-4 border-2 border-orange-500 text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors"
-              >
-                Traditional Wear
-              </Link>
-            </div>
+          <h1 className="font-display text-4xl font-bold leading-[1.1] sm:text-5xl lg:text-6xl">
+            {currentBanner.title}
+          </h1>
 
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-4 pt-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">500+</div>
-                <div className="text-sm text-gray-600">Products</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">10k+</div>
-                <div className="text-sm text-gray-600">Happy Kids</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">4.8★</div>
-                <div className="text-sm text-gray-600">Rating</div>
-              </div>
-            </div>
-          </div>
+          {currentBanner.description && (
+            <p className="max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
+              {currentBanner.description}
+            </p>
+          )}
 
-          {/* Image */}
-          <div className="relative">
-            <div className="relative z-10">
-              <img
-                src="https://images.pexels.com/photos/8088473/pexels-photo-8088473.jpeg?auto=compress&cs=tinysrgb&w=800"
-                alt="Beautiful Indian kids clothing"
-                className="w-full h-[500px] lg:h-[600px] object-cover rounded-3xl shadow-2xl"
-              />
-              
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 bg-white p-4 rounded-2xl shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <span className="text-2xl">🎉</span>
-                  <div>
-                    <div className="text-sm font-semibold">Festival Ready</div>
-                    <div className="text-xs text-gray-500">Special Collection</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-4 -left-4 bg-white p-4 rounded-2xl shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <span className="text-2xl">🌟</span>
-                  <div>
-                    <div className="text-sm font-semibold">Premium Quality</div>
-                    <div className="text-xs text-gray-500">Comfort Guaranteed</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Background Decoration */}
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-400 rounded-3xl transform rotate-3 scale-105 opacity-20"></div>
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <Link
+              to={currentBanner.linkUrl || '/shop'}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-neutral-900 transition-all hover:bg-accent-400"
+            >
+              {currentBanner.buttonText || 'Shop now'}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/shop"
+              className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+            >
+              Browse all
+            </Link>
           </div>
         </div>
+
+        {hasMultipleBanners && (
+          <div className="mt-10 flex gap-2">
+            {banners.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentBannerIndex(i)}
+                aria-label={`Go to banner ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === currentBannerIndex ? 'w-8 bg-accent-400' : 'w-3 bg-white/40'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 };

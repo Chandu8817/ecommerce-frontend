@@ -47,11 +47,43 @@ export const useAuth = () => {
     }
   };
 
+  const loginWithGoogle = async (idToken: string, role?: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiRequest<User>('/auth/google', {
+        method: 'POST',
+        body: JSON.stringify(role ? { idToken, role } : { idToken }),
+      });
+
+      // Backend returns { success, user, accessToken, refreshToken }.
+      const accessToken = (data as any).accessToken ?? (data as any).token;
+      if (accessToken) {
+        localStorage.setItem('token', accessToken);
+      }
+      if ((data as any).refreshToken) {
+        localStorage.setItem('refreshToken', (data as any).refreshToken);
+      }
+      const user = (data as any).user ?? data;
+      if (user?.role) {
+        localStorage.setItem('role', user.role);
+      }
+      return data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     setError(null);
     try {
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('role');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Logout failed');
       throw err;
@@ -176,6 +208,7 @@ export const useAuth = () => {
     registerAdmin,
     loginAdmin,
     login,
+    loginWithGoogle,
     logout,
     getCurrentUser,
     addShippingAddress,

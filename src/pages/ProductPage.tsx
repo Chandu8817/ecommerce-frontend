@@ -101,7 +101,7 @@ console.log(cart.items.length);
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+        <Loader2 className="w-12 h-12 text-ink-900 animate-spin" />
       </div>
     );
   }
@@ -113,8 +113,8 @@ console.log(cart.items.length);
         <button
           onClick={handleAddToCart}
           disabled={isAddingToCart}
-          className={`flex-1 bg-orange-500 text-white py-3 px-6 rounded-lg ${
-            isAddingToCart ? 'opacity-70 cursor-not-allowed' : 'hover:bg-orange-600'
+          className={`flex-1 bg-ink-900 text-white py-3 px-6 rounded-full ${
+            isAddingToCart ? 'opacity-70 cursor-not-allowed' : 'hover:bg-ink-800'
           } transition-colors flex items-center justify-center gap-2`}
         >
           {isAddingToCart ? (
@@ -163,7 +163,7 @@ console.log(cart.items.length);
             key={index}
             src={img}
             alt={product.name}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
               index === selectedIndex ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -176,8 +176,8 @@ console.log(cart.items.length);
           <button
             key={index}
             onClick={() => setSelectedIndex(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === selectedIndex ? "bg-blue-500" : "bg-gray-300"
+            className={`h-2.5 rounded-full transition-all duration-300 ${
+              index === selectedIndex ? "w-7 bg-ink-900" : "w-2.5 bg-gray-300"
             }`}
           />
         ))}
@@ -189,7 +189,7 @@ console.log(cart.items.length);
               {/* Header */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
+                  <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-700 text-sm font-medium rounded-full">
                     {product.category}
                   </span>
                   <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
@@ -197,7 +197,7 @@ console.log(cart.items.length);
                   </button>
                 </div>
                 
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                <h1 className="font-display text-3xl font-bold text-gray-900 mb-2 lg:text-4xl">{product.name}</h1>
                 
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="flex items-center">
@@ -207,7 +207,7 @@ console.log(cart.items.length);
                           key={i}
                           className={`w-5 h-5 ${
                             i < Math.floor(product.rating)
-                              ? 'text-yellow-400 fill-current'
+                              ? 'text-accent-500 fill-current'
                               : 'text-gray-300'
                           }`}
                         />
@@ -299,8 +299,8 @@ console.log(cart.items.length);
                 {cart.items.length>0?
                 <Link to='/cart'>
                   <button
-                   className="w-full flex items-center justify-center space-x-2 py-4 bg-orange-500 text-white font-semibold 
-                   rounded-xl hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+                   className="w-full flex items-center justify-center space-x-2 py-4 bg-ink-900 text-white font-semibold
+                   rounded-full hover:bg-ink-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
                    <ShoppingCart className="w-5 h-5" />
                    <span>Go to Cart</span>
                    </button>
@@ -308,7 +308,7 @@ console.log(cart.items.length);
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock===0 || quantity===0}
-                  className="w-full flex items-center justify-center space-x-2 py-4 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="w-full flex items-center justify-center space-x-2 py-4 bg-ink-900 text-white font-semibold rounded-full hover:bg-ink-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   <span>{product.stock>0?'Add to Cart':'Out of Stock'}</span>
@@ -318,17 +318,17 @@ console.log(cart.items.length);
               {/* Features Cards */}
               <div className="grid grid-cols-3 gap-4 pt-6 border-t">
                 <div className="text-center">
-                  <Truck className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                  <Truck className="w-8 h-8 text-accent-600 mx-auto mb-2" />
                   <div className="text-sm font-semibold text-gray-900">Free Shipping</div>
                   <div className="text-xs text-gray-600">On orders over ₹999</div>
                 </div>
                 <div className="text-center">
-                  <RotateCcw className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                  <RotateCcw className="w-8 h-8 text-accent-600 mx-auto mb-2" />
                   <div className="text-sm font-semibold text-gray-900">Easy Returns</div>
                   <div className="text-xs text-gray-600">30-day return policy</div>
                 </div>
                 <div className="text-center">
-                  <Shield className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                  <Shield className="w-8 h-8 text-accent-600 mx-auto mb-2" />
                   <div className="text-sm font-semibold text-gray-900">Quality Assured</div>
                   <div className="text-xs text-gray-600">Premium materials</div>
                 </div>
