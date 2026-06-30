@@ -131,12 +131,25 @@ export const useProducts = () => {
 
   // Get products with pagination
   const getPaginatedProducts = async (page: number = 1, pageSize: number = 12, filters: Omit<ProductFilters, 'take' | 'skip'> = {}) => {
+  //   const cached = JSON.parse(localStorage.getItem('productsCache') || '{}');
+  const now = Date.now();
+
+  // // ✅ Step 1: Use cached data if under 5 minutes old
+  // if (cached.data && now - cached.timestamp < 5 * 60 * 1000) {
+  //   console.log('🟢 Using local cached products');
+  //   return cached.data;
+  // }
     const skip = (page - 1) * pageSize;
-    return filterProducts({
+    const data = await filterProducts({
       ...filters,
       take: pageSize,
       skip,
     });
+    localStorage.setItem('productsCache', JSON.stringify({
+      data,
+      timestamp: now,
+    }));
+    return data;
   };
   const getTotalCount = async () => {
     setLoading(true);

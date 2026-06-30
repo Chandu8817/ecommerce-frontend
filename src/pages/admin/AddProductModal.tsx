@@ -93,7 +93,7 @@ export default function AddProductModal({ open, onClose,isBulk }: AddProductModa
   const handleBulkUpload = async () => {
     setLoading(true);
     try {
-      debugger
+      
       await addProducts(product);
       onClose();
     } catch (err: any) {
