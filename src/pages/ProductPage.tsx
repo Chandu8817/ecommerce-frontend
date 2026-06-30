@@ -5,7 +5,6 @@ import { useCart } from '../hooks/api/useCart';
 import { apiGet } from '../hooks/api/apiConfig';
 import type { Product } from '../types';
 import type { CartItem } from '../types';
-import API_BASE_URL from '../config';
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,8 +19,7 @@ export const ProductPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem>({ items: [], userId: '', _id: '', createdAt: '', updatedAt: '' });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const images = product?.images || [];
-  const staticBase = API_BASE_URL.replace("/api", "");
-  
+
   // Handle adding product to cart
   const handleAddToCart = async () => {
     if (!product) return;
@@ -163,7 +161,7 @@ console.log(cart.items.length);
         {images.map((img, index) => (
           <img
             key={index}
-            src={`${staticBase}${img}`}
+            src={img}
             alt={product.name}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
               index === selectedIndex ? "opacity-100" : "opacity-0"

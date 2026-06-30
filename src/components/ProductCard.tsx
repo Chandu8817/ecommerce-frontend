@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import { useCart } from '../hooks/api/useCart';
 import { useCartContext } from '../context/CartContext';
-import  API_BASE_URL  from '../config';
 
 interface ProductCardProps {
   product: Product;
@@ -60,7 +59,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'g
         {/* Image Container */}
         <div className={`relative ${viewMode === 'list' ? 'w-1/3' : 'aspect-square'}`}>
           <img
-           src={`${API_BASE_URL.replace('/api', '')}${product.images[0]}`}
+           src={product.images?.[0] || ''}
             alt={product.name}
             loading="lazy"
             className={`w-full h-full object-cover transition-transform duration-300 ${viewMode === 'grid' ? 'group-hover:scale-105' : ''}`}
